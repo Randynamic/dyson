@@ -1,0 +1,350 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>dyson by webpro</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>dyson</h1>
+        <p>Node server for dynamic, fake JSON.</p>
+
+        <p class="view"><a href="https://github.com/webpro/dyson">View the Project on GitHub <small>webpro/dyson</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/webpro/dyson/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/webpro/dyson/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/webpro/dyson">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="dyson" class="anchor" href="#dyson"><span class="octicon octicon-link"></span></a>dyson</h1>
+
+<p>Node server for dynamic, fake JSON.</p>
+
+<h2>
+<a name="give-it-to-me-now" class="anchor" href="#give-it-to-me-now"><span class="octicon octicon-link"></span></a>Give it to me, now</h2>
+
+<pre><code>npm install -g dyson
+dyson demo
+# Check http://localhost:3000/features
+</code></pre>
+
+<p>There may be errors coming from gyp/mmmagic (in dyson-image) during installation on Windows. These can be ignored, since a fallback dependency is in place.</p>
+
+<h2>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>Dyson allows you to define endpoints at a <code>path</code> and return JSON based on a <code>template</code> object.</p>
+
+<p>When developing client-side applications, for data usually either static JSON files are used, or an actual server, backend, datastore, API, you name it. Sometimes static files are too static, and sometimes an actual server is not available, not accessible, or too tedious to setup.</p>
+
+<p>This is where dyson comes in. Get a full fake server for your application up and running in minutes.</p>
+
+<p>Here's a complete service endpoint configuration file:</p>
+
+<pre><code>var g = require('dyson-generators');
+
+module.exports = {
+    path: '/user/:id',
+    template: {
+        id: function(params) {
+            return params.id;
+        },
+        name: g.name
+    }
+}
+</code></pre>
+
+<p>That's all. A request to <code>/user/412</code> would return:</p>
+
+<pre><code>{
+    "id": 412,
+    "name": "John"
+}
+</code></pre>
+
+<h2>
+<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h2>
+
+<ul>
+<li>Easy configuration, extensive options</li>
+<li>Dynamic responses
+
+<ul>
+<li>Responses may depend on request path or parameters (e.g. simulate different login scenarios based on username)</li>
+<li>Respond with different status code for specific requests (e.g. 404 for <code>?id=999</code>)</li>
+<li>Includes random data generators</li>
+</ul>
+</li>
+<li>Supports GET, POST, PUT, DELETE (and OPTIONS)</li>
+<li>Supports CORS</li>
+<li>Includes dummy image generator (from any image service)</li>
+</ul><p><a href="https://travis-ci.org/webpro/dyson"><img src="https://travis-ci.org/webpro/dyson.png" alt="Build Status"></a></p>
+
+<h2>
+<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>Configure endpoints using simple objects:</p>
+
+<pre><code>{
+    path: '/user/:id',
+    template: {
+        id: function(params, query, body) {
+            return params.id;
+        },
+        name: g.name,
+        address: {
+            zip: g.zipUS,
+            city: g.city
+        }
+    }
+}
+</code></pre>
+
+<p>The <code>path</code> string is the usual argument provided to <a href="http://expressjs.com/api.html#app.VERB">Express</a>, as in <code>app.get(path, callback);</code>.</p>
+
+<p>The <code>template</code> object may contain properties of the following types:</p>
+
+<ul>
+<li>function: the function will be invoked with arguments <em>(params, query, body)</em>
+</li>
+<li>string, boolean, number, array: returned as-is</li>
+<li>object: will be recursively iterated</li>
+<li>promise: if the function is a promise, it will be replaced with the resolving value</li>
+</ul><h2>
+<a name="fake-data-generators" class="anchor" href="#fake-data-generators"><span class="octicon octicon-link"></span></a>Fake data generators</h2>
+
+<p>To use the data generators (e.g. <code>g.name</code>), run:</p>
+
+<pre><code>npm install dyson-generators --save-dev
+</code></pre>
+
+<p>Or manually include <a href="http://github.com/webpro/dyson-generators">dyson-generators</a> in package.json:</p>
+
+<pre><code>"devDependencies": {
+    "dyson-generators": "~0.1"
+}
+</code></pre>
+
+<p>and <code>npm install</code> to add it. Please refer to <a href="http://github.com/webpro/dyson-generators">dyson-generators</a> for usage and examples.</p>
+
+<h2>
+<a name="collections" class="anchor" href="#collections"><span class="octicon octicon-link"></span></a>Collections</h2>
+
+<p>Same as examples above, but override the <code>collection</code> property:</p>
+
+<pre><code>{
+    path: '/users',
+    collection: true,
+    template: user.template
+}
+</code></pre>
+
+<p>This will give a response with an array of users (default array length is random between 2 and 10):</p>
+
+<pre><code>[
+    {
+        "id": 412,
+        "name": "John"
+    },
+    {
+        "id": 218,
+        "name": "Olivia"
+    }
+]
+</code></pre>
+
+<h2>
+<a name="images" class="anchor" href="#images"><span class="octicon octicon-link"></span></a>Images</h2>
+
+<p>In addition to configured endpoints, dyson registers a <a href="http://github.com/webpro/dyson-image">dummy image service</a> at <code>/image</code>. E.g. requesting <code>/image/300x200</code> serves an image with given dimensions.</p>
+
+<p>This service is a proxy to <a href="http://dummyimage.com/">Dynamic Dummy Image Generator</a> by <a href="http://twitter.com/kingkool68">Russell Heimlich</a>.</p>
+
+<h2>
+<a name="defaults" class="anchor" href="#defaults"><span class="octicon octicon-link"></span></a>Defaults</h2>
+
+<p>The default values for the configuration objects:</p>
+
+<pre><code>{
+    cache: true,
+    size: function() {
+        return _.random(2,10);
+    },
+    collection: false,
+    callback: response.generate,
+    render: response.render
+};
+</code></pre>
+
+<ul>
+<li>
+<code>cache:true</code> means that multiple requests to the same path will result in the same response</li>
+<li>
+<code>size:function</code> is the number of objects in the collection</li>
+<li>
+<code>callback:function</code>
+
+<ul>
+<li>the provided default function is doing the hard work (but can be overridden)</li>
+<li>used as middleware in Express</li>
+<li>must set <code>res.body</code> and call <code>next()</code> to render response</li>
+</ul>
+</li>
+<li>
+<code>render:function</code>
+
+<ul>
+<li>the default function to render the response (basically <code>res.send(200, res.body);</code>)</li>
+<li>used as middleware in Express</li>
+</ul>
+</li>
+</ul><h2>
+<a name="containers" class="anchor" href="#containers"><span class="octicon octicon-link"></span></a>Containers</h2>
+
+<p>The response data can be stored anywhere in the response in a <code>container</code> object. Functions in the <code>container</code> object are invoked with arguments <em>(params, query, data)</em>:</p>
+
+<pre><code>{
+    path: '/users',
+    template: user.template,
+    container: {
+        meta: function(params, query, data) {
+            userCount: data.length
+        },
+        data: {
+            all: [],
+            the: {
+                way: {
+                    here: function(params, query, data) {
+                        return data;
+                    }
+                }
+            }
+        }
+    }
+}
+</code></pre>
+
+<p>And an example response:</p>
+
+<pre><code>{
+    "meta": {
+        "userCount": 2
+    },
+        data: {
+            all: [],
+            the: {
+                way: {
+                    here: [
+                        {
+                            "id": 412,
+                            "name": "John"
+                        },
+                        {
+                            "id": 218,
+                            "name": "Olivia"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+</code></pre>
+
+<h2>
+<a name="combined-requests" class="anchor" href="#combined-requests"><span class="octicon octicon-link"></span></a>Combined requests</h2>
+
+<p>Basic support for "combined" requests is available, by means of a comma separated path fragment.</p>
+
+<p>For example, a request to <code>/user/5,13</code> will result in an array of the responses from <code>/user/5</code> and <code>/user/13</code>.</p>
+
+<h2>
+<a name="status-codes" class="anchor" href="#status-codes"><span class="octicon octicon-link"></span></a>Status codes</h2>
+
+<p>By default, all responses are sent with a status code <code>200</code> (and the <code>Content-Type: application/json</code> header).</p>
+
+<p>This can be completely overridden with the <code>status</code> property, e.g.:</p>
+
+<pre><code>path: '/feature/:foo?',
+status: function(req, res) {
+    if(req.params.foo === '999') {
+        res.send(404, 'Feature not found');
+    }
+}
+</code></pre>
+
+<p>Would result in a <code>404</code> when requesting <code>/feature/999</code>.</p>
+
+<h2>
+<a name="get-started" class="anchor" href="#get-started"><span class="octicon octicon-link"></span></a>Get started</h2>
+
+<h3>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
+
+<pre><code>npm install -g dyson
+</code></pre>
+
+<p>Local installation is unsupported.</p>
+
+<h3>
+<a name="quick-demo" class="anchor" href="#quick-demo"><span class="octicon octicon-link"></span></a>Quick demo</h3>
+
+<p>Run <code>dyson demo</code> to play around and serve some demo JSON responses at these endpoints:</p>
+
+<pre><code>http://localhost:3000/employee/1
+http://localhost:3000/users
+http://localhost:3000/features
+</code></pre>
+
+<h3>
+<a name="project" class="anchor" href="#project"><span class="octicon octicon-link"></span></a>Project</h3>
+
+<p>In any project you can generate some dummy templates to get started:</p>
+
+<pre><code>dyson init [dir]
+</code></pre>
+
+<p>This script copies dummy config objects in the <code>[dir]/get</code>, <code>[dir]/post</code>, <code>[dir]/put</code>, <code>[dir]/delete</code> subdirs. These folders are scanned for configuration files when dyson is started:</p>
+
+<pre><code>dyson [dir]
+</code></pre>
+
+<p>This starts the services configured in <code>[dir]</code> at <code>http://localhost:3000</code>.</p>
+
+<h3>
+<a name="note" class="anchor" href="#note"><span class="octicon octicon-link"></span></a>Note</h3>
+
+<p>Your configuration files are just regular Node modules. Dyson is installed globally as a server; when started it reads those configuration modules local to your project.
+So if you need any module in your configuration, then you should add them to your project (<code>package.json</code>), and <code>require()</code> them in configuration files (e.g. <a href="#fake-data-generators">dyson-generators</a>).</p>
+
+<h2>
+<a name="development--run-tests" class="anchor" href="#development--run-tests"><span class="octicon octicon-link"></span></a>Development &amp; run tests</h2>
+
+<pre><code>git clone git@github.com:webpro/dyson.git
+cd dyson
+npm install
+npm test
+</code></pre>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/webpro">webpro</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
