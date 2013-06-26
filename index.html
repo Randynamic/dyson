@@ -16,7 +16,7 @@
     <div class="wrapper">
       <header>
         <h1>dyson</h1>
-        <p>Node server for dynamic, fake JSON.</p>
+        <p>Node server for dynamic, fake JSON</p>
 
         <p class="view"><a href="https://github.com/webpro/dyson">View the Project on GitHub <small>webpro/dyson</small></a></p>
 
@@ -33,9 +33,6 @@
 
 <p>Node server for dynamic, fake JSON.</p>
 
-<h2>
-<a name="give-it-to-me-now" class="anchor" href="#give-it-to-me-now"><span class="octicon octicon-link"></span></a>Give it to me, now</h2>
-
 <pre><code>npm install -g dyson
 dyson demo
 # Check http://localhost:3000/features
@@ -44,34 +41,13 @@ dyson demo
 <h2>
 <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
 
-<p>Dyson allows you to define endpoints at a <code>path</code> and return JSON based on a <code>template</code> object.</p>
+<p>Dyson allows you to define endpoints at a <code>path</code> and return JSON based on a <code>template</code> object:</p>
+
+<p><img src="http://webpro.github.com/dyson/input-output.png" alt="input-output"></p>
 
 <p>When developing client-side applications, for data usually either static JSON files are used, or an actual server, backend, datastore, API, you name it. Sometimes static files are too static, and sometimes an actual server is not available, not accessible, or too tedious to setup.</p>
 
 <p>This is where dyson comes in. Get a full fake server for your application up and running in minutes.</p>
-
-<p>Here's a complete service endpoint configuration file:</p>
-
-<pre><code>var g = require('dyson-generators');
-
-module.exports = {
-    path: '/user/:id',
-    template: {
-        id: function(params) {
-            return params.id;
-        },
-        name: g.name
-    }
-}
-</code></pre>
-
-<p>That's all. A request to <code>/user/412</code> would return:</p>
-
-<pre><code>{
-    "id": 412,
-    "name": "John"
-}
-</code></pre>
 
 <h2>
 <a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h2>
@@ -86,9 +62,16 @@ module.exports = {
 <li>Includes random data generators</li>
 </ul>
 </li>
+<li>Supports RESTful applications</li>
 <li>Supports GET, POST, PUT, DELETE (and OPTIONS)</li>
 <li>Supports CORS</li>
-<li>Includes dummy image generator (from any image service)</li>
+<li>Includes dummy image generator
+
+<ul>
+<li>Use any external or local image service (included)</li>
+<li>Supports base64 encoded image strings</li>
+</ul>
+</li>
 </ul><p><a href="https://travis-ci.org/webpro/dyson"><img src="https://travis-ci.org/webpro/dyson.png" alt="Build Status"></a></p>
 
 <h2>
@@ -121,48 +104,7 @@ module.exports = {
 <li>string, boolean, number, array: returned as-is</li>
 <li>object: will be recursively iterated</li>
 <li>promise: if the function is a promise, it will be replaced with the resolving value</li>
-</ul><h2>
-<a name="fake-data-generators" class="anchor" href="#fake-data-generators"><span class="octicon octicon-link"></span></a>Fake data generators</h2>
-
-<p>To use the data generators (e.g. <code>g.name</code>), run:</p>
-
-<pre><code>npm install dyson-generators --save-dev
-</code></pre>
-
-<p>Or manually include <a href="http://github.com/webpro/dyson-generators">dyson-generators</a> in package.json:</p>
-
-<pre><code>"devDependencies": {
-    "dyson-generators": "~0.1"
-}
-</code></pre>
-
-<p>and <code>npm install</code> to add it. Please refer to <a href="http://github.com/webpro/dyson-generators">dyson-generators</a> for usage and examples.</p>
-
-<h2>
-<a name="collections" class="anchor" href="#collections"><span class="octicon octicon-link"></span></a>Collections</h2>
-
-<p>Same as examples above, but override the <code>collection</code> property:</p>
-
-<pre><code>{
-    path: '/users',
-    collection: true,
-    template: user.template
-}
-</code></pre>
-
-<p>This will give a response with an array of users (default array length is random between 2 and 10):</p>
-
-<pre><code>[
-    {
-        "id": 412,
-        "name": "John"
-    },
-    {
-        "id": 218,
-        "name": "Olivia"
-    }
-]
-</code></pre>
+</ul><p>Note: the <code>template</code> can also be a <em>function</em> returning the actual data. The function is invoked with arguments <em>(params, query, body)</em>.</p>
 
 <h2>
 <a name="images" class="anchor" href="#images"><span class="octicon octicon-link"></span></a>Images</h2>
@@ -193,6 +135,8 @@ module.exports = {
 <li>
 <code>size:function</code> is the number of objects in the collection</li>
 <li>
+<code>collection:true</code> will return a collection</li>
+<li>
 <code>callback:function</code>
 
 <ul>
@@ -210,9 +154,19 @@ module.exports = {
 </ul>
 </li>
 </ul><h2>
+<a name="fake-data-generators" class="anchor" href="#fake-data-generators"><span class="octicon octicon-link"></span></a>Fake data generators</h2>
+
+<p>Install the data generators (e.g. <code>g.name</code>) in your project to use them:</p>
+
+<pre><code>npm install dyson-generators --save-dev
+</code></pre>
+
+<p>Please refer to <a href="http://github.com/webpro/dyson-generators">dyson-generators</a> for usage and examples.</p>
+
+<h2>
 <a name="containers" class="anchor" href="#containers"><span class="octicon octicon-link"></span></a>Containers</h2>
 
-<p>The response data can be stored anywhere in the response in a <code>container</code> object. Functions in the <code>container</code> object are invoked with arguments <em>(params, query, data)</em>:</p>
+<p>Containers can help if you need to send along some meta data, or wrap the response data in a specific way. Just use the <code>container</code> object, and return the <code>data</code> where you want it. Functions in the <code>container</code> object are invoked with arguments <em>(params, query, data)</em>:</p>
 
 <pre><code>{
     path: '/users',
@@ -241,21 +195,20 @@ module.exports = {
     "meta": {
         "userCount": 2
     },
-        data: {
-            all: [],
-            the: {
-                way: {
-                    here: [
-                        {
-                            "id": 412,
-                            "name": "John"
-                        },
-                        {
-                            "id": 218,
-                            "name": "Olivia"
-                        }
-                    ]
-                }
+    data: {
+        all: [],
+        the: {
+            way: {
+                here: [
+                    {
+                        "id": 412,
+                        "name": "John"
+                    },
+                    {
+                        "id": 218,
+                        "name": "Olivia"
+                    }
+                ]
             }
         }
     }
@@ -295,7 +248,7 @@ status: function(req, res) {
 <pre><code>npm install -g dyson
 </code></pre>
 
-<p>Local installation is unsupported.</p>
+<p>Note: You need to install dyson as a global module, but configuration files are local to your project.</p>
 
 <h3>
 <a name="quick-demo" class="anchor" href="#quick-demo"><span class="octicon octicon-link"></span></a>Quick demo</h3>
@@ -315,18 +268,12 @@ http://localhost:3000/features
 <pre><code>dyson init [dir]
 </code></pre>
 
-<p>This script copies dummy config objects in the <code>[dir]/get</code>, <code>[dir]/post</code>, <code>[dir]/put</code>, <code>[dir]/delete</code> subdirs. These folders are scanned for configuration files when dyson is started:</p>
+<p>This script copies dummy config files to <code>[dir]/get/</code>, <code>[dir]/post/</code>, <code>[dir]/put/</code>, and <code>[dir]/delete/</code>. These folders are scanned for configuration files when dyson is started:</p>
 
 <pre><code>dyson [dir]
 </code></pre>
 
 <p>This starts the services configured in <code>[dir]</code> at <code>http://localhost:3000</code>.</p>
-
-<h3>
-<a name="note" class="anchor" href="#note"><span class="octicon octicon-link"></span></a>Note</h3>
-
-<p>Your configuration files are just regular Node modules. Dyson is installed globally as a server; when started it reads those configuration modules local to your project.
-So if you need any module in your configuration, then you should add them to your project (<code>package.json</code>), and <code>require()</code> them in configuration files (e.g. <a href="#fake-data-generators">dyson-generators</a>).</p>
 
 <h2>
 <a name="development--run-tests" class="anchor" href="#development--run-tests"><span class="octicon octicon-link"></span></a>Development &amp; run tests</h2>
